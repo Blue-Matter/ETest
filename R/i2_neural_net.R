@@ -57,7 +57,7 @@ train_NN = function(TD, nodes = c(4, 2), nepoch = 20, plot = T, model=NULL, mode
   
   outlist=list(MAE = MAE, sim=sim, pred=pred, grid=grid, tab = tab, model=model, train=train, 
        train_target=train_target, nepoch = nepoch, r2 = cor(sim,pred)^2, history = history,
-       lev=lev)
+       lev=lev, mu = mu, sd = sd)
   
   if(plot)(pred_plot(outlist))
   
