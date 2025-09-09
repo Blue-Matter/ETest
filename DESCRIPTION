@@ -1,7 +1,7 @@
 Package: ETest
 Type: Package
 Title: Testing of Indicators of Stock Status
-Version: 0.1.5
+Version: 0.1.7
 Authors@R: c(
     person(
       "Tom", "Carruthers",
