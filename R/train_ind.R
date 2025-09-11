@@ -54,13 +54,15 @@ data_comp=function(td, data){
 #' @param validation_split Fraction. The proportion of the dataset that will be used for cross-validation as the neural network is training.
 #' @param test_split Fraction. The proportion of the training dataset reserved as an independent testing dataset (those data of the simulated - predicted plot and confusion matrix).
 #' @param lev A vector of 2 positions. The location of the breaks of the confusion matrix.
+#' @param seed Numeric value. Random seed for stochastic draws of validation and testing datasets.
 #' @examples
 #' train_ind(Shark_1_data)
 #' @author T. Carruthers
 #' @export
 train_ind=function(input, nodes = c(6, 3), nepoch = 20, plot = T, model=NULL, model_savefile=NA,
-                    validation_split=0.1, test_split = 0.1, lev=c(0.5,1)){
+                    validation_split=0.1, test_split = 0.1, lev=c(0.5,1),seed=1){
 
+  set.seed(1)
   is_retro = all(names(input[[1]])==c("dat","Brel"))
   if(is_retro){
     data=input[[1]]

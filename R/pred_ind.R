@@ -65,7 +65,7 @@ pred_ind = function(Ind){
     sretro= Ind$sretro
     pred = lapply(sretro,function(x)exp((model %>% predict(x[[1]]))[,1]))
   }
-  emp_comp_plot(sdata, pred)
+  if(length(Ind$data)==2)emp_comp_plot(sdata, pred)
   pred
 }
 

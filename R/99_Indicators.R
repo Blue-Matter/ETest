@@ -19,6 +19,28 @@ slp3_nolog<-function(y){
   (1/SS)*sum((x1-mux)*(y-muy),na.rm=T)
 }
 
+#  xx=exp(rlnorm(70,0,0.5)*sin(seq(0,12,length.out=70))); enp.mult=0.2; nint=30; plotname=""; plot=T
+interpolate<-function(xx,plot=F,enp.mult=0.2,nint=30,plotname=""){
+  tofill<-!is.na(xx)
+  xx[xx==0]<-1E3
+  allpredout<-rep(NA,length(xx))
+  dat<-data.frame(x=1:length(xx),y=log(xx))
+  enp.target<-sum(tofill)*enp.mult
+  out<-loess(y~x,dat=dat,enp.target=enp.target)
+  
+  allpredout[tofill]<-exp(predict(out))
+  intx = seq(1,length(xx),length.out=nint)
+  interpolated = exp(predict(out,newdata=data.frame(x=intx)))
+  out = interpolated/mean(interpolated)
+  if(plot){
+    plot(xx,type="p",xlab="x",ylab="y",main=plotname)
+    lines(predout,col="#ff000090",lwd=2)
+    points(intx,interpolated,col="blue",pch=19)
+  }
+  out
+  
+}
+
 smooth2<-function(xx,plot=F,enp.mult=0.2,plotname="",ret = "pred"){
   tofill<-!is.na(xx)
   xx[xx==0]<-1E3

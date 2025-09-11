@@ -75,7 +75,7 @@ pre { /* Code block */
 
 ***
 
-<img src="img/Dolphinfish.png" width = 910>
+<img src="img/Banner.png" width = 910>
 
 ***
 
@@ -196,7 +196,7 @@ These indicators focus on the prediction of stock status relative to a productiv
 
 ## Overview of the EcoTest approach
 
-### Step 1 Propose a suite of indicators
+### Step 1 - Propose a suite of indicators
 
 EcoTest can accept a range of indicators that may be available for secondary species derived from data streams such as total annual catches, CPUE indices, mean length in catches and mean age in catches. These can be provide along with life-history (e.g. somatic growth, natural survival) and fleet-specific (e.g. selectivity) characteristics to potentially improve reliability in interpreting these indicators. 
 
@@ -204,24 +204,18 @@ Where multiple fleets can be identified, indicators can be provided for up to 3 
 
 Where multiple stocks can be assumed to have been exploited by a common fishery with comparable exploitation history, multi-stock indicators can be used including catch ratios of one stock to another. 
 
-### Step 2 Format indicators for use with EcoTest neural networks
+### Step 2 - Format indicators for use with EcoTest neural networks
 
 A training dataset was generated from a large number of multi-stock, multi-fleet simulations spanning a range of life-histories and fishery dynamics typical for tuna, billfish and sharks. In each simulation 426 indicators were calculated along and the known, true simulated stock status (spawning biomass relative to spawning biomass at MSY levels) was recorded. The 426 indicators relate to trajectories and levels of data such as catches, CPUE indices and mean length in catches and are processed and formatted in such a way that they are generalisable for all case studies. 
 
 Some indicators relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-Table 1. Indicator Features (data types)
-
-```{r Features, eval=T,echo=F}
-plotatab('tables/Various.xlsx','Features')
-
-```
 
 &nbsp;
 
 
-### Step 3 Train and artificial neural network for the specific suite of indicators selected by the user
+### Step 3 - Train and artificial neural network for the specific suite of indicators selected by the user
 
 The large training dataset is subsetted to include only those features of the dataset provided by the user. An artificial neural network is then trained on the dataset. 
 
@@ -234,7 +228,7 @@ This step can be seen as (a) a theoretical check that there is information in th
 A result of this step is a fitted model and also a standardized version of the user's dataset that has the same standardization process as the training dataset. 
 
 
-### Step 4. Predict stock status 
+### Step 4. - Estimate stock status using the indicator
 
 The product of step 3 (fitted model and standardized version of the dataset) can be used to estimate stock status. 
 
@@ -304,46 +298,104 @@ If your packages are working you should see something like this:
 
 Lets just assume we have some data on catches, recent CPUE and a bit of life history info
 
-```{r Point_estimate, eval=F,echo=T}
+```{r Quick_start_train, eval=F,echo=T}
+library(ETest)
+
 dat = data.frame(
-  K_s1 = 0.25,
-  M_K_s1 = 1.05,
-  L50_Linf_s1 = 0.74,
-  maxa_s1 = 11,
-  L5_L50_s1_f1 = 0.2,
-  C_rel_s1_f1 = 0.67,
-  C_g10_s1_f1 = 0.01,
-  I_rel_s1_f1 = 0.43,
-  I_g20_s1_f1 = -0.09,
-  ML_rel_s1_f1 = 0.9
-  
+  K_s1 = 0.25,         # von B. somatic growth (stock 1)
+  M_K_s1 = 1.05,       # Instantaneous natural Mort. / von B. K (stock 1)
+  L50_Linf_s1 = 0.74,  # Length at 50% maturity (spawning fraction) / asymptotic length (L-infinity) (stock 1)
+  maxa_s1 = 11,        # Age at 5% survival (stock 1)
+  L5_L50_s1_f1 = 0.2,  # Shortest length at 5% selectivity relative to length at 50% maturity (stock 1)
+  C_rel_s1_f1 = 0.67,  # Current catches relative to historical average (stock 1, fleet 1)
+  C_g10_s1_f1 = 0.01,  # Slope in log catches over the last 10 years (stock 1, fleet 1)
+  I_rel_s1_f1 = 0.43,  # Current CPUE relative to historical average (stock 1, fleet 1)
+  I_g20_s1_f1 = -0.09, # Slope in log CPUE over the last 20 years (stock 1, fleet 1)
+  ML_rel_s1_f1 = 0.9   # Current mean length in catches relative to historical average (stock 1, fleet 1)
 )
 
 input = list(dat=dat)
-train_ind(input)
+my_indicator = train_ind(input)
 
 ```
 
+<img src="img/QuickStartTrain.png" width = 500>
+
+You can see that the performance of this indicator isn't stellar however it correctly classifies stocks below half SSBMSY (an ICCAT limit reference point) and above SSBMSY (an ICCAT target reference point) in about 60% of simulations. 
+
+For now we are going to assume we find this acceptable (you might well not!). 
+
+We can now obtain a point estimate of stock status using our indicator and the dataset provided: 
+
+```{r Quick_start_est, eval=F,echo=T}
+
+my_pred = pred_ind(my_indicator)
+my_pred
+
+```
+
+Since only one set of data were provided there is only a point estimate of stock status. However most datasets can be sampled to provide stochastic inputs (bootstrapping etc). 
+
+For the purposes of demonstration lets just great some samples of data so you can plot indicator estimates that include uncertainty:
+
+```{r Quick_start_stoch, eval=F,echo=T}
+nsamp = 50
+nobs = ncol(dat)
+dat_s = as.data.frame(array(rep(as.numeric(dat),each=nsamp)*rlnorm(nobs*nsamp,0,0.2),c(nsamp,nobs)))
+names(dat_s)=names(dat)
+
+input_s = list(dat=dat_s)
+my_indicator_s = train_ind(input_s)
+my_pred_s = pred_ind(my_indicator_s)
+hist(my_pred_s,xlab="Estimated SSB/SSBMSY",main="Demonstration Stochastic Indicator",col="cornflowerblue",border="white")
+
+```
+
+<img src="img/QuickStartStochEst.png" width = 400>
 
 
 ## Get a point estimate of stock status from single species data
 
-In this example we will process some example data, train an indicator and estimate stock status using it. The ETest package comes with an example dataset 'Some_data' for these worked examples. The dataset has catches, CPUE indices, mean length, life history and selectivity information for three fleets simultaneously fishing three fleets. 
+In this example we will process some example data, train an indicator and estimate stock status using it. 
 
-To make creating time series data features easier, ETest has a function ts_features(). 
+The ETest package comes with an example dataset 'Some_data' for these worked examples. The dataset has catches, CPUE indices, mean length, life history and selectivity information for three fleets simultaneously fishing three fleets. We are not necessarily going to assume we have all these data, but they are there to experiment with.  
+
+To make creating time series data features easier, ETest has a function ts_features() which extracts the levels and slopes processed in the same way as the training dataset.  
 
 
-```{r Point_estimate, eval=F,echo=T}
-library(ETest)
+```{r Some_Data_proc, eval=F,echo=T}
 
 stock = 1  # Lets just try this for one stock and...
 fleet = 1  #   one fleet. 
 Catch = Some_data$Catch[stock,fleet,] # Catch data is a 3D array [stock, fleet, year]
-plot(names(Catch),Catch) # what do these catch data look like?
-Catch_f = ts_features(Catch, "C")  # lets capture the rel, s5, s10 and s20 features
+plot(as.numeric(names(Catch)),Catch) # what do these catch data look like?
+Catch_f = ts_features(Catch, "C")  # lets capture the rel, g5, g10, g20 and g40 features
+Catch_f
+
+Index = Some_data$Index[stock,fleet,] # CPUE index data is a 3D array [stock, fleet, year]
+Index_f = ts_features(Index, "I")  # captures the rel, g5, g10, g20 and g40 features
+
+ML_f = ts_features(Some_data$Mean_length[stock,fleet,],"ML")
+
+fleet_data = as.data.frame(c(Catch_f, Index_f, ML_f))
+names(fleet_data) = paste0(names(fleet_data),"_s",stock,"_f",fleet)
+
+LH_sel_data = data.frame(K_s1 = Some_data$K[stock],
+                       M_K_s1 = Some_data$M[stock]/Some_data$K[stock],
+                       maxa_s1 = Some_data$maxa[stock],
+                       L5_L50_s1_f1 = Some_data$L5[stock,fleet]/Some_data$L50[stock,fleet],
+                       LFS_L50_s1_f1 = Some_data$LFS[stock,fleet]/Some_data$L50[stock,fleet])
+
+input2 = list(data=cbind(LH_sel_data, fleet_data))
 
 ```
+Now that we have our dataset, extracted from three time series (Catch, a CPUE index and Mean Length) in addition to selectivity and life history parameters, we can set up the indicator:
 
+
+```{r Some_data_train, eval=F,echo=T}
+my_indicator2 = train_ind(input2)
+
+```
 
 ## Conduct empirical evaluation
 
@@ -353,7 +405,15 @@ Catch_f = ts_features(Catch, "C")  # lets capture the rel, s5, s10 and s20 featu
 
 ***
 
+## Summary of EcoTest Indicator Features (data types)
 
+
+Table 1. Indicator Features (data types)
+
+```{r Features, eval=T,echo=F}
+plotatab('tables/Various.xlsx','Features')
+
+```
 
 ## Resources
 
