@@ -24,21 +24,49 @@ emp_comp_plot = function(sdata, pred){
   dat = cbind(LB,sdata$Brel$Value,UB)
   matplot(yrs,dat,ylim=c(0,max(dat)),col=c("darkgrey","black","darkgrey"),type="l", lty=1,lwd=2,xlab="Year",ylab="SSB/SSBMSY"); grid()
 
-  pred_CI = quantile(pred,c(0.05,0.95))
-  ly = yrs[ny]
-  lines(c(ly,ly),c(pred_CI[1],pred_CI[2]),col="red",lwd=2)
-  points(ly,mean(pred),pch=19,cex=1.1,col="red")
+  if(class(pred)!="list"){
+    pred_CI = quantile(pred,c(0.05,0.95))
+    ly = yrs[ny]
+    lines(c(ly,ly),c(pred_CI[1],pred_CI[2]),col="red",lwd=2)
+    points(ly,mean(pred),pch=19,cex=1.1,col="red")
+  }else{
+    npeels = length(pred)
+    mus = lys = rep(NA,npeels)
+    for(linc in 1:npeels){
+      pred_CI = quantile(pred[[linc]],c(0.05,0.95))
+      ly = yrs[ny]-linc+1
+      lines(c(ly,ly),c(pred_CI[1],pred_CI[2]),col="red",lwd=2)
+      mus[linc]=mean(pred[[linc]])
+      points(ly,mus[linc],pch=19,cex=1.1,col="red")
+      lys[linc]=ly
+    }
+    lines(lys,mus,col="red",lwd=2)
+
+  }
 
 }
 
-
+#' Predicting stock status from a trained neural network and standardized user data
+#'
+#' A function that operates on the output of the train_ind() function.
+#'
+#' @param Ind The output of the train_ind function.
+#' @examples
+#' pred_ind(train_ind(Shark_1_data))
+#' @author T. Carruthers
+#' @export
 pred_ind = function(Ind){
   model = Ind$model
+  is_retro=!is.null(Ind$retro)
   sdata = Ind$sdata
-  pred = exp((model %>% predict(sdata[[1]]))[,1])
-  if(length(sdata)>1){
-    emp_comp_plot(sdata, pred)
+  if(!is_retro){
+     pred = exp((model %>% predict(sdata[[1]]))[,1])
+  }else{
+    sretro= Ind$sretro
+    pred = lapply(sretro,function(x)exp((model %>% predict(x[[1]]))[,1]))
   }
+  emp_comp_plot(sdata, pred)
+  pred
 }
 
 

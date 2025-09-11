@@ -141,7 +141,7 @@ power_tab = function(sim, pred, lev = c(0.5,1),asprob = T){
 
 NN_fit = function(sim, pred, history,lev, addpow=T, nepoch,plot=T){
   tab = power_tab(sim, pred, lev)
-  if(plot) pred_plot(list(sim=sim,pred=pred,grid=grid,lev =lev,tab=tab))
+  if(plot) pred_plot(inlist=list(sim=sim,pred=pred,grid=grid,lev =lev,tab=tab,r2 = cor(sim,pred)^2,MAE=mean(abs(sim-pred))))
   tab
 }
 
