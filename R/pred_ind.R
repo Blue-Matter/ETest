@@ -43,6 +43,7 @@ emp_comp_plot = function(sdata, pred){
     lines(lys,mus,col="red",lwd=2)
 
   }
+  legend('topright',legend=c("SS3 (90% CI)","Indicator (90% CI)"),text.col=c("black","red"),bty="n")
 
 }
 

@@ -79,8 +79,6 @@ pre { /* Code block */
 
 ***
 
-&nbsp;
-
 <img src="img/BM.jpg" width="100">
 <img src="img/openMSE.JPG" width="100">
 
@@ -151,11 +149,14 @@ These analyses do not necessarily reflect the point of view of ICCAT or the FAO 
 
 ***
 
+
 ## Objective
 
 Develop a flexible and powerful indicator of stock status for tunas, billfish and sharks that can be tested theoretically and empirically. 
 
 ***
+
+
 
 ## Project details
 
@@ -177,6 +178,7 @@ kable(dat,"simple",col.names=rep("",2))
 ```
 
 ***
+
 
 ## Introduction
 
@@ -211,10 +213,6 @@ A training dataset was generated from a large number of multi-stock, multi-fleet
 Some indicators relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-
-&nbsp;
-
-
 ### Step 3 - Train and artificial neural network for the specific suite of indicators selected by the user
 
 The large training dataset is subsetted to include only those features of the dataset provided by the user. An artificial neural network is then trained on the dataset. 
@@ -234,10 +232,8 @@ The product of step 3 (fitted model and standardized version of the dataset) can
 
 If a historical trend in empirically estimated stock status is provided, the results of indicator estimation can be compared with other empirical estimates. 
 
-
-
-
 ***
+
 
 ## Installation
 
@@ -292,11 +288,12 @@ If your packages are working you should see something like this:
 
 ***
 
+
 ## Worked Examples
 
-## Quick Start
+### Quick Start
 
-Lets just assume we have some data on catches, recent CPUE and a bit of life history info
+Lets just assume we have some data on catches, recent CPUE and a bit of life history info. Remember, these names have to match the EcoTest codes for indicator features (see Table 1 below). 
 
 ```{r Quick_start_train, eval=F,echo=T}
 library(ETest)
@@ -319,7 +316,7 @@ my_indicator = train_ind(input)
 
 ```
 
-<img src="img/QuickStartTrain.png" width = 500>
+<img src="img/QuickStartTrain.png" width = 450>
 
 You can see that the performance of this indicator isn't stellar however it correctly classifies stocks below half SSBMSY (an ICCAT limit reference point) and above SSBMSY (an ICCAT target reference point) in about 60% of simulations. 
 
@@ -339,22 +336,27 @@ Since only one set of data were provided there is only a point estimate of stock
 For the purposes of demonstration lets just great some samples of data so you can plot indicator estimates that include uncertainty:
 
 ```{r Quick_start_stoch, eval=F,echo=T}
-nsamp = 50
-nobs = ncol(dat)
-dat_s = as.data.frame(array(rep(as.numeric(dat),each=nsamp)*rlnorm(nobs*nsamp,0,0.2),c(nsamp,nobs)))
-names(dat_s)=names(dat)
+nsamp = 50                                                  # 50 stochastic draws of the dataset
+nobs = ncol(dat)                                            # data set has nobs features (data types)
+log_norm_err = rlnorm(nobs*nsamp,0,0.2)                     # demo error 
+data_repped = rep(as.numeric(dat),each=nsamp)               # duplicate data for nsamp rows
+dat_s = array(data_repped * log_norm_err,c(nsamp,nobs))     # combine data with errors
+dat_s = as.data.frame(dat_s)                                # make into data frame
+names(dat_s) = names(dat)                                   # make sure to copy over labels
 
-input_s = list(dat=dat_s)
-my_indicator_s = train_ind(input_s)
-my_pred_s = pred_ind(my_indicator_s)
-hist(my_pred_s,xlab="Estimated SSB/SSBMSY",main="Demonstration Stochastic Indicator",col="cornflowerblue",border="white")
+input_s = list(dat=dat_s)                                   # make an input object where position one in the list is the data
+my_indicator_s = train_ind(input_s)                         # train the indicator
+my_pred_s = pred_ind(my_indicator_s)                        # make a status prediction for each of the 50 samples of data
+hist(my_pred_s, xlab="Estimated SSB/SSBMSY", main="Demonstration Stochastic Indicator", col="cornflowerblue", border="white")
 
 ```
 
 <img src="img/QuickStartStochEst.png" width = 400>
 
 
-## Get a point estimate of stock status from single species data
+&nbsp;
+
+### Get a point estimate of stock status from single species data
 
 In this example we will process some example data, train an indicator and estimate stock status using it. 
 
@@ -365,45 +367,139 @@ To make creating time series data features easier, ETest has a function ts_featu
 
 ```{r Some_Data_proc, eval=F,echo=T}
 
-stock = 1  # Lets just try this for one stock and...
-fleet = 1  #   one fleet. 
-Catch = Some_data$Catch[stock,fleet,] # Catch data is a 3D array [stock, fleet, year]
-plot(as.numeric(names(Catch)),Catch) # what do these catch data look like?
-Catch_f = ts_features(Catch, "C")  # lets capture the rel, g5, g10, g20 and g40 features
+stock = 1                                # Lets just try this for one stock and ...
+fleet = 1                                #    ... one fleet. 
+Catch = Some_data$Catch[stock,fleet,]    # Catch data is a 3D array [stock, fleet, year]
+plot(as.numeric(names(Catch)),Catch)     # what do these catch data look like?
+Catch_f = ts_features(Catch, "C")        # lets capture the rel, g5, g10, g20 and g40 features
 Catch_f
 
-Index = Some_data$Index[stock,fleet,] # CPUE index data is a 3D array [stock, fleet, year]
-Index_f = ts_features(Index, "I")  # captures the rel, g5, g10, g20 and g40 features
+Index = Some_data$Index[stock,fleet,]    # CPUE index data is a 3D array [stock, fleet, year]
+Index_f = ts_features(Index, "I")        # captures the rel, g5, g10, g20 and g40 features
 
-ML_f = ts_features(Some_data$Mean_length[stock,fleet,],"ML")
+ML = Some_data$Mean_length[stock,fleet,] # Mean length data
+ML_f = ts_features(ML,"ML")              # captures the rel, g5, g10, g20 and g40 features
 
-fleet_data = as.data.frame(c(Catch_f, Index_f, ML_f))
-names(fleet_data) = paste0(names(fleet_data),"_s",stock,"_f",fleet)
+fleet_data = as.data.frame(c(Catch_f, Index_f, ML_f))                  # combine fleet data
+names(fleet_data) = paste0(names(fleet_data),"_s",stock,"_f",fleet)    # label correctly 
 
-LH_sel_data = data.frame(K_s1 = Some_data$K[stock],
-                       M_K_s1 = Some_data$M[stock]/Some_data$K[stock],
-                       maxa_s1 = Some_data$maxa[stock],
-                       L5_L50_s1_f1 = Some_data$L5[stock,fleet]/Some_data$L50[stock,fleet],
-                       LFS_L50_s1_f1 = Some_data$LFS[stock,fleet]/Some_data$L50[stock,fleet])
+LH_sel_data = data.frame(K_s1 = Some_data$K[stock],                    # combine life history and selectivity info
+                       M_K_s1 = Some_data$M[stock]/Some_data$K[stock], # ratio of M to K 
+                       maxa_s1 = Some_data$maxa[stock],                # age at 5% natural survival
+                       L5_L50_s1_f1 = Some_data$L5[stock,fleet]/Some_data$L50[stock,fleet],   # shortest length at 5% selectivity relative to L50
+                       LFS_L50_s1_f1 = Some_data$LFS[stock,fleet]/Some_data$L50[stock,fleet]) # length at 95% selectivity relative to L50
 
-input2 = list(data=cbind(LH_sel_data, fleet_data))
+input2 = list(data=cbind(LH_sel_data, fleet_data))                     # Combine inputs into a single input object
 
 ```
 Now that we have our dataset, extracted from three time series (Catch, a CPUE index and Mean Length) in addition to selectivity and life history parameters, we can set up the indicator:
 
 
-```{r Some_data_train, eval=F,echo=T}
-my_indicator2 = train_ind(input2)
+```{r Some_data_train1, eval=F,echo=T}
+my_indicator2 = train_ind(input2)  # train indicator, standardize input data
 
 ```
 
-## Conduct empirical evaluation
+
+### Conduct empirical evaluation using ETest datasets
+
+The ETest package comes with a number of real fishery datasets loaded. You can list these using the R function data():
+
+```{r Some_data_train2, eval=F,echo=T}
+data(package="ETest")
+
+```
+<img src="img/ETest_data.png" width = 250>
+
+There is an object TD which is the full training dataset. You can always look at that if you want to check the magnitude and range of data inputs used for training the neural networks. 
+
+The other objects are labelled _io, _data and _retro. 
+
+_io objects such as Shark_1_io are list objects that contain all of the inputs and outputs to a Stock Synthesis 3 assessment. 
+
+_data objects are list objects that contain ETest formatted features obtained from those _io stock synthesis runs (position 1, 'inputs') and also the stock synthesis estimated stock status (position 2, 'Brel'). 
+
+_retro objects are a list of _data objects npeels long which strip back the data from the stock synthesis runs to allow retrospective behavior of indicators to be evaluated. 
+
+It is simple to conduct indicator training and prediction, including retrospective analysis:
+
+```{r ET_Data, eval=F,echo=T}
+
+# Single stock status estimate using data to most recent year:
+Shark_1_ind = train_ind(Shark_1_data)
+Shark_1_pred = pred_ind(Shark_1_ind)
+```
+
+<img src="img/Shark_1_pred.png" width = 350>
+
+```{r ET_Data2, eval=F,echo=T}
+
+# Retropsective stock status estimate using npeels of the SS3 data:
+Shark_1_ind_retro = train_ind(Shark_1_retro)
+Shark_1_pred_retro = pred_ind(Shark_1_ind_retro)
+
+```
+
+<img src="img/Shark_1_retro.png" width = 350>
 
 
-## Multi-stock indicators
+### Use an existing stock synthesis assessment to conduct an empirical test
+
+To obtain all relevant outputs for a current Stock Synthesis model you will a directory where an assessment has been run and you will need to install the latest version of the r4ss package.
+
+```{r all_ss3, eval=F,echo=T}
+wm_io = all_ss3("C:/myassessments/ATL_white_marlin_2025")
+
+```
+
+Once you have the assessment ripped into R, you need to pick what fleets and indices you wish to extract. You can use the ss_names() function to list the fleets / surveys. You then have to select the relevant fleets and corresponding cpue indices and then make your formatted EcoTest indicator features using SS_2_ET(): 
+
+```{r SS_2_ET, eval=F,echo=T}
+ss_names(wm_io)
+wm_data = SS_2_ET(wm_io, Fnam = c("JPN_LL_N","US_PL_N"), Inam = c("Surv_JPN_LL_N","Surv_US_PL_N"))
+
+```
+
+The wm_data object now has features for three fleet data sets: the Japanese longline north the US pole and line north and all other fleets combined. Selectivities for all other fleets combined are weighted by historical average catches. 
+
+The function SS_2_ET() samples from time series and parameters to provide a stochastic feature dataset in order to obtain variance in stock status estimates. 
+
+You can now run the indicator for that dataset: 
+
+```{r train_ind_wm, eval=F,echo=T}
+wm_ind = train_ind(wm_data)
+wm_pred = pred_ind(wm_ind)
+
+```
+
+or alternatively you can do the same steps but conduct a retrospective analysis using the function SS_2_ET_Retro():
+
+```{r retro_wm, eval=F,echo=T}
+wm_retro = SS_2_ET_Retro(wm_io, Fnam = c("JPN_LL_N","US_PL_N"), Inam = c("Surv_JPN_LL_N","Surv_US_PL_N"),npeels=8)
+wm_ind_retro = train_ind(wm_retro)
+wm_pred_retro = pred_ind(wm_ind_retro)
+
+```
+
+### Multi-stock indicators
+
+In general fisheries stock assessment has failed to incorporate information across multiple species. This is a missed opportunity. For example if the denominator of CPUE (effort) is comparable in trend among two species, their catch ratio informs their *relative* depletion. This means that depletion on one stock starts to be informed by data about depletion on the other stock. As the number of stocks increases (that adhere to this assumption of approximately comparable effort trends) an increasibly narrow set of depletion conditions can prevail. To demonstrate this lets see how well only catch data can inform stock status across three species: 
+
+
+```{r retro_wm, eval=F,echo=T}
+fleet = 1                                #    ... one fleet. 
+Catch_f1 = ts_features(Some_data$Catch[1,fleet,],"C")
+Catch_f2 = ts_features(Some_data$Catch[2,fleet,],"C")
+Catch_f3 = ts_features(Some_data$Catch[3,fleet,],"C")
+msdat = c(unlist(Catch_f1),unlist(Catch_f2),unlist(Catch_f3))
+names(msdat) = paste0(names(msdat),"_s",rep(1:3,each=5),"_f1")
+
+
+```
 
 
 ***
+
 
 ## Summary of EcoTest Indicator Features (data types)
 
@@ -415,12 +511,16 @@ plotatab('tables/Various.xlsx','Features')
 
 ```
 
+***
+
+
 ## Resources
 
 
 The [openMSE website](https://openmse.com/) contains extensive documentation about openMSE and approaches such as RCM. 
 
 ***
+
 
 
 ## Software and Code
@@ -435,17 +535,22 @@ The [openMSE website](https://openmse.com/) contains extensive documentation abo
 
 ## Neural Network Links
 
+[Zhou's intro to ANN and machine learning](https://victorzhou.com/blog/intro-to-neural-networks/)
+
+[Keras 3: Deep learning API](https://keras.io/)
+
+[Tensorflow: Platform for machine learning](https://www.tensorflow.org/)
+
+[Nvidia CUDA Toolkit: GPU accellerated applications](https://developer.nvidia.com/cuda-toolkit)
+
 ***
 
-
-
-***
 
 ## Recent Presentations
 
-[April SSC Meeting](https://safmc.net/documents/9_dolphinfish_mse_april2025_ssc-pdf/). Dolphin management strategy evaluation: SSC review 1.
+[EcoTest Phase 3 SCRS/2024/87](\presentations\SCRS-2024-87 Carruthers et al EcoTest Phase III.pptx)
 
-[April Dolphin Wahoo AP Meeting](https://safmc.net/documents/dwap_a2_dolphinmse_update_202504-pdf/). Update on the dolphin management strategy evaluation.
+[EcoTest Indicator 2 SCRS/2025/109](\presentations\SCRS-2025-109 Carruthers Taylor EcoTest Indicator 2.pptx)
 
 
 ***
@@ -453,10 +558,20 @@ The [openMSE website](https://openmse.com/) contains extensive documentation abo
 
 ## References
 
+Carruthers, T.R. 2018. A multispecies catch-ratio estimator of relative stock depletion. Fisheries Research. 197: 25-33, https://doi.org/10.1016/j.fishres.2017.09.017.
+
+[Carruthers, T.R., & Taylor, N.G. 2025. EcoTest Indicator 2: A general purpose stock status indicator for sharks, billfish and tunas.](https://www.iccat.int/Documents/CVSP/CV082_2025/n_6/CV082060109.pdf) 
+
+[Carruthers, T.R., Huynh, Q., Taylor, N.G. 2024. EcoTest Phase III: Simulation testing Ecosystem Indicators. SCRS/2023/087. ](https://www.researchgate.net/publication/385130368_ECOTEST_PHASE_III_SIMULATION_TESTING_ECOSYSTEM_INDICATORS)
+
 Huynh, Q., 2025. Rapid Conditioning model. Available from [https://openmse.com/tutorial-rcm/](https://openmse.com/tutorial-rcm/) 
 
+[Huynh, Q., Carruthers, T., Taylor, N.G. 2022. EcoTest: a proof of concept for evaluating ecological indicators in multispecies fisheries, with the Atlantic longline fishery case study. SCRS/2022/106.](https://iccat.int/Documents/CVSP/CV081_2024/n_4/CV08104087.pdf) 
+
+Juan-Jordá, M.J., Murua, H., Arrizabalaga, H., Dulvy, N.K., and Restrepo, V. 2018. Report card on ecosystem-based fisheries management in tuna regional fisheries management organizations. Fish Fish. 19: 321-339.
 
 ***
+
 
 ## Acknowledgements
 
