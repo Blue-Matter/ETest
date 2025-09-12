@@ -333,7 +333,7 @@ my_pred
 
 Since only one set of data were provided there is only a point estimate of stock status. However most datasets can be sampled to provide stochastic inputs (bootstrapping etc). 
 
-For the purposes of demonstration lets just great some samples of data so you can plot indicator estimates that include uncertainty:
+For the purposes of demonstration lets just create some samples of data so you can plot indicator estimates that include uncertainty:
 
 ```{r Quick_start_stoch, eval=F,echo=T}
 nsamp = 50                                                  # 50 stochastic draws of the dataset
@@ -358,11 +358,11 @@ hist(my_pred_s, xlab="Estimated SSB/SSBMSY", main="Demonstration Stochastic Indi
 
 ### Get a point estimate of stock status from single species data
 
-In this example we will process some example data, train an indicator and estimate stock status using it. 
+In this example we will process some example time series data, train an indicator and estimate stock status using it. 
 
 The ETest package comes with an example dataset 'Some_data' for these worked examples. The dataset has catches, CPUE indices, mean length, life history and selectivity information for three fleets simultaneously fishing three fleets. We are not necessarily going to assume we have all these data, but they are there to experiment with.  
 
-To make creating time series data features easier, ETest has a function ts_features() which extracts the levels and slopes processed in the same way as the training dataset.  
+To make creating time series data inputs easier, ETest has a function ts_features() which extracts the levels and slopes processed in the same way as the training dataset.  
 
 
 ```{r Some_Data_proc, eval=F,echo=T}
@@ -392,7 +392,7 @@ LH_sel_data = data.frame(K_s1 = Some_data$K[stock],                    # combine
 input2 = list(data=cbind(LH_sel_data, fleet_data))                     # Combine inputs into a single input object
 
 ```
-Now that we have our dataset, extracted from three time series (Catch, a CPUE index and Mean Length) in addition to selectivity and life history parameters, we can set up the indicator:
+Now that we have our dataset, extracted from three time series (Catch, a CPUE index and Mean Length) in addition to selectivity and life history parameters, we can train and use the indicator:
 
 
 ```{r Some_data_train1, eval=F,echo=T}
@@ -428,7 +428,7 @@ _data objects are list objects that contain ETest formatted features obtained fr
 
 _retro objects are a list of _data objects npeels long which strip back the data from the stock synthesis runs to allow retrospective behavior of indicators to be evaluated. 
 
-It is simple to conduct indicator training and prediction, including retrospective analysis:
+Using these objects it is simple to conduct indicator training and prediction, including retrospective analysis:
 
 ```{r ET_Data, eval=F,echo=T}
 
@@ -437,6 +437,7 @@ Shark_1_ind = train_ind(Shark_1_data)
 Shark_1_pred = pred_ind(Shark_1_ind)
 hist(Shark_1_pred)
 ```
+<img src="img/Shark_1_data.png" width = 350>
 
 <img src="img/Shark_1_pred.png" width = 350>
 
@@ -551,6 +552,19 @@ As expected, the relative index levels were doing the majority (but not all) of 
 
 ***
 
+## Neural network design and training
+
+### Over parameterization
+
+< coming soon!>
+
+### Altering network design
+
+< coming soon!>
+
+### Training options
+
+< coming soon!>
 
 ## Summary of EcoTest Indicator Features (data types)
 
