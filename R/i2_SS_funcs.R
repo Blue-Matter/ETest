@@ -122,7 +122,10 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
   newind = rep(3,nc) # default to fleet 3
   for(ff in 1:2)newind[ct$fleet == Find[ff]]=ff  
   aggcatch = aggregate(ct$catch,by=list(year = ct$year, fleet = newind),sum)
-  aggcatch=aggcatch[aggcatch$year > 0 & aggcatch$year<=lastyr,] # Retro
+  aggcatch = aggcatch[aggcatch$year > 0 & aggcatch$year<=lastyr,] # Retro
+  
+  fleetcatch = aggregate(ct$catch,by=list(fleet = newind),sum)
+  fleetcatch$x = fleetcatch$x/sum(fleetcatch$x)
   
   # get indices ----------
   ind = dat$CPUE
@@ -182,14 +185,14 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
   selpar = getsels(io,Find,dat,plotsmooth) # selectivity by fleet (MLE, not sampled)
   
   # Blank vectors
-  I_cur<-I_mu<-I_rel<-I_g5<-I_g10<-I_g20<- 
+  I_cur<-I_mu<-I_rel<-I_g5<-I_g10<-I_g20<-I_g40<- 
     Isd1 <- Isd2 <- Isd3 <-
-    C_cur<- C_mu<-C_rel<-C_g5<-C_g10<- C_g20<- 
-    Csd <-
-    ML_cur<-ML_mu<-ML_rel<-ML_g5<-ML_g10<-ML_g20<- ML_L50 <- ML_Linf <-
-    MA_cur<-MA_mu<-MA_rel<-MA_g5<-MA_g10<-MA_g20<-
-    MV_cur<- MV_mu<-MV_rel<- MV_g5<-MV_g10<-MV_g20<-
-    FM_cur <- FM_mu <- FM_rel <- FM_g5 <- FM_g10 <-FM_g20 <- rep(NA,nsamp)
+    C_cur<- C_mu<-C_rel<-C_g5<-C_g10<- C_g20<- C_g40<-
+    Csd <- CF <- 
+    ML_cur<-ML_mu<-ML_rel<-ML_g5<-ML_g10<-ML_g20<- ML_g40 <- ML_L50 <- ML_Linf <-
+    MA_cur<-MA_mu<-MA_rel<-MA_g5<-MA_g10<-MA_g20<- MA_g40 <-
+    MV_cur<- MV_mu<-MV_rel<- MV_g5<-MV_g10<-MV_g20<- MV_g40<-
+    FM_cur <- FM_mu <- FM_rel <- FM_g5 <- FM_g10 <-FM_g20 <- FM_g40<-rep(NA,nsamp)
   
    
   # summarise fleet specific data
@@ -233,6 +236,7 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
       if(nyind>=5)I_g5[i]<-slp3(findsim[nyind-(4:0)])
       if(nyind>=10)I_g10[i]<-slp3(findsim[nyind-(9:0)])
       if(nyind>=20)I_g20[i]<-slp3(findsim[nyind-(19:0)])
+      if(nyind>=40)I_g40[i]<-slp3(findsim[nyind-(39:0)])
       ind = nyind - (min(20,nyind):1) +1
       Isd1[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.4, plot=plotsmooth))
       Isd2[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.2, plot=plotsmooth))
@@ -248,6 +252,8 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
       if(nycat>=5)C_g5[i]<-slp3(fcatsim[nycat-(4:0)])
       if(nycat>=10)C_g10[i]<-slp3(fcatsim[nycat-(9:0)])
       if(nycat>=20)C_g20[i]<-slp3(fcatsim[nycat-(19:0)])
+      if(nycat>=40)C_g40[i]<-slp3(fcatsim[nycat-(39:0)])
+      CF[i] = fleetcatch$x[fleetcatch$fleet==ff]
       
       if(lengthswitch){
         # Mean length
@@ -259,6 +265,7 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
         if(nyml>=5)ML_g5[i]<-slp3(mlsim[nyml-(4:0)])
         if(nyml>=10) ML_g10[i]<-slp3(mlsim[nyml-(9:0)])
         if(nyml>=20) ML_g20[i]<-slp3(mlsim[nyml-(19:0)])
+        if(nyml>=40) ML_g40[i]<-slp3(mlsim[nyml-(39:0)])
         ML_Linf[i]= ML_cur[i]/Linf[i]
         ML_L50[i]= ML_cur[i]/L50[i]
         
@@ -270,15 +277,17 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
         if(nysdl>=5) MV_g5[i]<-slp3(fsdl[nysdl-(4:0)])
         if(nysdl>=10)MV_g10[i]<-slp3(fsdl[nysdl-(9:0)])
         if(nysdl>=20)MV_g20[i]<-slp3(fsdl[nysdl-(19:0)])
+        if(nysdl>=40)MV_g40[i]<-slp3(fsdl[nysdl-(39:0)])
         
         # fraction mature
         FMs = smooth2(fFM, plot = plotsmooth, enp.mult = 0.1)
         FM_cur[i]= FMs[nyFM]
         #FM_mu[i] = mean(FMs[nyears:Iind[i,2]])
         FM_rel[i] <- FM_cur[i] / mean(FMs[1:nyFM])
-        if(nyFM >=5) FM_g5[i]<-slp3(Fmat[nyFM-(4:0)])
-        if(nyFM >=10) FM_g10[i]<-slp3(Fmat[nyFM-(9:0)])
-        if(nyFM >=20) FM_g20[i]<-slp3(Fmat[nyFM-(19:0)])
+        if(nyFM >=5) FM_g5[i]<-slp3(FMs[nyFM-(4:0)])
+        if(nyFM >=10) FM_g10[i]<-slp3(FMs[nyFM-(9:0)])
+        if(nyFM >=20) FM_g20[i]<-slp3(FMs[nyFM-(19:0)])
+        if(nyFM >=40) FM_g40[i]<-slp3(FMs[nyFM-(39:0)])
         
       }
        
@@ -291,13 +300,13 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
     if(VMLf>0.975)VMLf = 0.975
     VML = rbeta(nsamp,alphaconv(VMLf,VML_CV),betaconv(VMLf,VML_CV))
     
-    df = data.frame(I_rel, I_g5, I_g10, I_g20, 
+    df = data.frame(I_rel, I_g5, I_g10, I_g20, I_g40,
                     Isd1, Isd2, Isd3,
-                    C_rel, C_g5, C_g10, C_g20, Csd, 
-                    ML_cur, ML_rel, ML_g5, ML_g10, ML_g20, ML_L50, ML_Linf,
-                    MV_cur, MV_rel, MV_g5, MV_g10, MV_g20,
-                    FM_cur, FM_rel, FM_g5, FM_g10, FM_g20,
-                    MA_cur, MA_rel, MA_g5, MA_g10, MA_g20, 
+                    C_rel, C_g5, C_g10, C_g20, C_g40, Csd, CF, 
+                    ML_cur, ML_rel, ML_g5, ML_g10, ML_g20, ML_g40, ML_Linf,
+                    MV_cur, MV_rel, MV_g5, MV_g10, MV_g20, MV_g40,
+                    FM_cur, FM_rel, FM_g5, FM_g10, FM_g20, FM_g40,
+                    MA_cur, MA_rel, MA_g5, MA_g10, MA_g20, MA_g40,
                     L5_L50, LFS_L50, VML)
     
     names(df) = paste0(names(df),"_s1_f",ff)
@@ -331,7 +340,7 @@ SS_2_ET_Retro=function(io, Fnam , Inam, npeels=8){
     minlabs = names(nams)[nams==npeels]
     cat(paste0("Pruning from ",max(nd), " to ",length(minlabs)," data inputs \n"))
     #minlabs = names(outlist[[npeels]][[1]])
-    for(pp in 1:(npeels-1)){
+    for(pp in 1:npeels){
       tab =  outlist[[pp]][[1]] 
       outlist[[pp]][[1]] = tab[,match(minlabs,names(tab))]
     }

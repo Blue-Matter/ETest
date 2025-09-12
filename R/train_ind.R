@@ -27,8 +27,8 @@ train_data_comp = function(train, strain,tdata, sdata){
 data_comp=function(td, data){
 
   mutd = apply(td[,2:ncol(td)],2,mean)
-  mintd = apply(td[,2:ncol(td)],2,quantile,p=0.05)
-  maxtd = apply(td[,2:ncol(td)],2,quantile,p=0.95)
+  mintd = apply(td[,2:ncol(td)],2,quantile,p=0.025)
+  maxtd = apply(td[,2:ncol(td)],2,quantile,p=0.975)
   mudata = apply(data[[1]],2,mean)
 
   data.frame(mutd=round(mutd,3),
@@ -38,7 +38,7 @@ data_comp=function(td, data){
              inside = mudata<maxtd & mudata>mintd)
 
 }
-# input = Shark_1_data; nodes = c(6, 3); nepoch = 20; plot = T; model=NULL; model_savefile=NA; validation_split=0.1; test_split = 0.1; lev=c(0.5,1)
+# input = Shark_1_data; nodes = c(6, 3); nepoch = 20; plot = T; model=NULL; model_savefile=NA; validation_split=0.1; test_split = 0.1; lev=c(0.5,1); seed=1
 
 
 #' Training a neural network for features specified by user data.
@@ -62,8 +62,8 @@ data_comp=function(td, data){
 train_ind=function(input, nodes = c(6, 3), nepoch = 20, plot = T, model=NULL, model_savefile=NA,
                     validation_split=0.1, test_split = 0.1, lev=c(0.5,1),seed=1){
 
-  set.seed(1)
-  is_retro = all(names(input[[1]])==c("dat","Brel"))
+  set.seed(seed)
+  is_retro = !(class(input[[1]])=="data.frame")
   if(is_retro){
     data=input[[1]]
     retro = tretro = sretro = input
@@ -104,7 +104,8 @@ train_ind=function(input, nodes = c(6, 3), nepoch = 20, plot = T, model=NULL, mo
     }
   }
 
-  keep = data_comp(td,tdata)$inside
+  datac = data_comp(td,tdata)
+  keep = datac$inside
 
   td = td[,c(TRUE,keep)]
   nr<-nrow(td);   nc<-ncol(td)

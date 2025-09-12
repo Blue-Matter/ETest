@@ -188,7 +188,7 @@ The EcoTest project aims to use simulation modelling to identify data and algori
 
 A well-documented, defensible and transparent framework is needed to support tactical decision making to move beyond the single species assessment paradigm and make progress towards the essential goals of EBFM.
  
-Previous work synthesized the dynamics of six stock assessments and consolidated those into a single multi-species, multi-fleet operating model (Huynh et al. 2022). Those operating models were used to simulate various future scenarios for fishing and stock dynamics to develop Indicator 1: an indicator system specific to the longline case study that could predict stock status for the 6 species without undergoing a full stock assessment (Carruthers et al 2024). 
+Previous work synthesized the dynamics of six stock assessments and consolidated those into a multi-species, multi-fleet operating model (Huynh et al. 2022). Those operating models were used to simulate various future scenarios for fishing and stock dynamics to develop Indicator 1: an indicator system specific to the longline case study that could predict stock status for the 6 species without undergoing a full stock assessment (Carruthers et al 2024). 
 
 The key advance of this earlier work was to use deep learning to train neural networks on the posterior-predicted data of a large number of simulations (a training dataset). The ETest package is built around an evoluation of that approach, using simulated posterior predicted data from a much more general set of simulations that include population and fishing dynamics for a wide range of pelagic highly migratory species that are caught in Atlantic fisheries. 
 
@@ -198,7 +198,7 @@ These indicators focus on the prediction of stock status relative to a productiv
 
 ## Overview of the EcoTest approach
 
-### Step 1 - Propose a suite of indicators
+### Propose a suite of indicators
 
 EcoTest can accept a range of indicators that may be available for secondary species derived from data streams such as total annual catches, CPUE indices, mean length in catches and mean age in catches. These can be provide along with life-history (e.g. somatic growth, natural survival) and fleet-specific (e.g. selectivity) characteristics to potentially improve reliability in interpreting these indicators. 
 
@@ -206,14 +206,14 @@ Where multiple fleets can be identified, indicators can be provided for up to 3 
 
 Where multiple stocks can be assumed to have been exploited by a common fishery with comparable exploitation history, multi-stock indicators can be used including catch ratios of one stock to another. 
 
-### Step 2 - Format indicators for use with EcoTest neural networks
+### Format indicators for use with EcoTest neural networks
 
 A training dataset was generated from a large number of multi-stock, multi-fleet simulations spanning a range of life-histories and fishery dynamics typical for tuna, billfish and sharks. In each simulation 426 indicators were calculated along and the known, true simulated stock status (spawning biomass relative to spawning biomass at MSY levels) was recorded. The 426 indicators relate to trajectories and levels of data such as catches, CPUE indices and mean length in catches and are processed and formatted in such a way that they are generalisable for all case studies. 
 
 Some indicators relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-### Step 3 - Train and artificial neural network for the specific suite of indicators selected by the user
+### Train and artificial neural network for the specific suite of indicators selected by the user
 
 The large training dataset is subsetted to include only those features of the dataset provided by the user. An artificial neural network is then trained on the dataset. 
 
@@ -226,7 +226,7 @@ This step can be seen as (a) a theoretical check that there is information in th
 A result of this step is a fitted model and also a standardized version of the user's dataset that has the same standardization process as the training dataset. 
 
 
-### Step 4. - Estimate stock status using the indicator
+### Estimate stock status using the indicator
 
 The product of step 3 (fitted model and standardized version of the dataset) can be used to estimate stock status. 
 
@@ -277,7 +277,7 @@ To test your installation run the following code
 
 ```{r Test_Install, eval=F,echo=T}
 library(ETest)
-train_ind(Shark_1_data)
+test = train_ind(Shark_1_data)
 ```
 
 If your packages are working you should see something like this:
@@ -386,8 +386,8 @@ names(fleet_data) = paste0(names(fleet_data),"_s",stock,"_f",fleet)    # label c
 LH_sel_data = data.frame(K_s1 = Some_data$K[stock],                    # combine life history and selectivity info
                        M_K_s1 = Some_data$M[stock]/Some_data$K[stock], # ratio of M to K 
                        maxa_s1 = Some_data$maxa[stock],                # age at 5% natural survival
-                       L5_L50_s1_f1 = Some_data$L5[stock,fleet]/Some_data$L50[stock,fleet],   # shortest length at 5% selectivity relative to L50
-                       LFS_L50_s1_f1 = Some_data$LFS[stock,fleet]/Some_data$L50[stock,fleet]) # length at 95% selectivity relative to L50
+                       L5_L50_s1_f1 = Some_data$L5[stock,fleet]/Some_data$L50[stock],   # shortest length at 5% selectivity relative to L50
+                       LFS_L50_s1_f1 = Some_data$LFS[stock,fleet]/Some_data$L50[stock]) # length at 95% selectivity relative to L50
 
 input2 = list(data=cbind(LH_sel_data, fleet_data))                     # Combine inputs into a single input object
 
@@ -397,6 +397,13 @@ Now that we have our dataset, extracted from three time series (Catch, a CPUE in
 
 ```{r Some_data_train1, eval=F,echo=T}
 my_indicator2 = train_ind(input2)  # train indicator, standardize input data
+
+```
+
+And then get an estimate of stock status:
+
+```{r Some_data_pred, eval=F,echo=T}
+pred_ind(my_indicator2)  # estimate stock status from trained indicator and submitted dataset
 
 ```
 
@@ -428,6 +435,7 @@ It is simple to conduct indicator training and prediction, including retrospecti
 # Single stock status estimate using data to most recent year:
 Shark_1_ind = train_ind(Shark_1_data)
 Shark_1_pred = pred_ind(Shark_1_ind)
+hist(Shark_1_pred)
 ```
 
 <img src="img/Shark_1_pred.png" width = 350>
@@ -474,7 +482,7 @@ wm_pred = pred_ind(wm_ind)
 
 or alternatively you can do the same steps but conduct a retrospective analysis using the function SS_2_ET_Retro():
 
-```{r retro_wm, eval=F,echo=T}
+```{r retro_wm1, eval=F,echo=T}
 wm_retro = SS_2_ET_Retro(wm_io, Fnam = c("JPN_LL_N","US_PL_N"), Inam = c("Surv_JPN_LL_N","Surv_US_PL_N"),npeels=8)
 wm_ind_retro = train_ind(wm_retro)
 wm_pred_retro = pred_ind(wm_ind_retro)
@@ -483,19 +491,62 @@ wm_pred_retro = pred_ind(wm_ind_retro)
 
 ### Multi-stock indicators
 
-In general fisheries stock assessment has failed to incorporate information across multiple species. This is a missed opportunity. For example if the denominator of CPUE (effort) is comparable in trend among two species, their catch ratio informs their *relative* depletion. This means that depletion on one stock starts to be informed by data about depletion on the other stock. As the number of stocks increases (that adhere to this assumption of approximately comparable effort trends) an increasibly narrow set of depletion conditions can prevail. To demonstrate this lets see how well only catch data can inform stock status across three species: 
+In general, fisheries stock assessment has failed to incorporate information across multiple species in the estimation of stock status. This is a missed opportunity. 
+
+For example if the denominator of CPUE indcies of abundance (effort) is comparable in trend among two species, their catch ratio informs their *relative* depletion (e.g. if the catch ratio of stock 1 : stock 2 has declined by 50%, then this infers that stock 1 is at half the vulnerable stock size as stock 2 (assuming you standardized your data correctly).
+
+This means that depletion on one stock may be informed by data informing depletion on the other stock. As the number of stocks increases (that adhere to this assumption of approximately comparable effort trends) an increasibly narrow set of depletion conditions may prevail. To demonstrate this lets see how well only catch data can inform stock status across three species: 
 
 
-```{r retro_wm, eval=F,echo=T}
+```{r retro_wm2, eval=F,echo=T}
 fleet = 1                                #    ... one fleet. 
 Catch_f1 = ts_features(Some_data$Catch[1,fleet,],"C")
 Catch_f2 = ts_features(Some_data$Catch[2,fleet,],"C")
 Catch_f3 = ts_features(Some_data$Catch[3,fleet,],"C")
-msdat = c(unlist(Catch_f1),unlist(Catch_f2),unlist(Catch_f3))
-names(msdat) = paste0(names(msdat),"_s",rep(1:3,each=5),"_f1")
+cvec = c(unlist(Catch_f1),unlist(Catch_f2),unlist(Catch_f3))
+msdat = data.frame(matrix(cvec,1))
+names(msdat) = paste0(names(cvec),"_s",rep(1:3,each=5),"_f1")
+input = list(dat=msdat)
+catch_ind = train_ind(input)
 
 
 ```
+<img src="img/Catch_only.png" width = 350>
+
+Since there is nothing providing an indication of *absolute* depletion the indicator based on catches alone performs very poorly. 
+
+```{r retro_wm3, eval=F,echo=T}
+fleet = 1   #    ... one fleet. 
+
+
+Index_s1 = ts_features(Some_data$Index[1,fleet,],"I")
+Index_s2 = ts_features(Some_data$Index[2,fleet,],"I")
+Index_s3 = ts_features(Some_data$Index[3,fleet,],"I")
+Index_rels = data.frame(I_rel_s1_f1 = Index_s1$I_rel,
+                        I_rel_s2_f1 = Index_s2$I_rel,
+                        I_rel_s3_f1 = Index_s3$I_rel)
+wIdat = list(dat = cbind(msdat, Index_rels))
+catch_wI_ind = train_ind(wIdat)
+
+
+```
+
+<img src="img/Catch_wI.png" width = 350>
+
+
+Adding just the current index levels relative to historical means, tidied the indicator up somewhat. 
+
+Now lets find out how much of that was just the index levels:
+
+```{r retro_wm4, eval=F,echo=T}
+
+catch_onlyI_ind = train_ind(list(dat=Index_rels))
+
+
+```
+<img src="img/Index_only.png" width = 350>
+
+As expected, the relative index levels were doing the majority (but not all) of the lifting.
 
 
 ***
