@@ -213,7 +213,7 @@ A training dataset was generated from a large number of multi-stock, multi-fleet
 Some data inputs relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-### Train and artificial neural network for the specific suite of data inputs selected by the user
+### Train an artificial neural network for the specific suite of data inputs selected by the user
 
 The large training dataset is subsetted to include only those data inputs provided by the user. An artificial neural network is then trained on the substted training dataset. 
 
