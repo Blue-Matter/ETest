@@ -198,30 +198,30 @@ These indicators focus on the prediction of stock status relative to a productiv
 
 ## Overview of the EcoTest approach
 
-### Propose a suite of indicators
+### Propose a suite of data inputs
 
-EcoTest can accept a range of indicators that may be available for secondary species derived from data streams such as total annual catches, CPUE indices, mean length in catches and mean age in catches. These can be provide along with life-history (e.g. somatic growth, natural survival) and fleet-specific (e.g. selectivity) characteristics to potentially improve reliability in interpreting these indicators. 
+EcoTest can accept a range of data inputs (features) that may be available for secondary species derived from data streams such as total annual catches, CPUE indices, mean length in catches and mean age in catches. These can be provide along with life-history (e.g. somatic growth, natural survival) and fleet-specific (e.g. selectivity) characteristics to potentially improve reliability in interpreting these data inputs.  
 
-Where multiple fleets can be identified, indicators can be provided for up to 3 individual fleets. 
+Where multiple fleets can be identified, data inputs can be provided for up to 3 individual fleets. 
 
-Where multiple stocks can be assumed to have been exploited by a common fishery with comparable exploitation history, multi-stock indicators can be used including catch ratios of one stock to another. 
+Where multiple stocks can be assumed to have been exploited by a common fishery with comparable exploitation history, multi-stock data inputs can be used including catch ratios of one stock to another. 
 
-### Format indicators for use with EcoTest neural networks
+### Format data inputs for use with EcoTest neural networks
 
-A training dataset was generated from a large number of multi-stock, multi-fleet simulations spanning a range of life-histories and fishery dynamics typical for tuna, billfish and sharks. In each simulation 426 indicators were calculated along and the known, true simulated stock status (spawning biomass relative to spawning biomass at MSY levels) was recorded. The 426 indicators relate to trajectories and levels of data such as catches, CPUE indices and mean length in catches and are processed and formatted in such a way that they are generalisable for all case studies. 
+A training dataset was generated from a large number of multi-stock, multi-fleet simulations spanning a range of life-histories and fishery dynamics typical for tuna, billfish and sharks. In each simulation more than 400 data inputs were calculated along with the known, true simulated stock status (spawning biomass relative to spawning biomass at MSY levels). The data inputs relate to trajectories, levels and variability of data such as catches, CPUE indices and mean length in catches and are processed and formatted in such a way that they can be calculated for any fishery (e.g. mean lengthin catches is phrased as a percentage of asumptotic length, slopes in data are slopes in log data etc). 
 
-Some indicators relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
+Some data inputs relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-### Train and artificial neural network for the specific suite of indicators selected by the user
+### Train and artificial neural network for the specific suite of data inputs selected by the user
 
-The large training dataset is subsetted to include only those features of the dataset provided by the user. An artificial neural network is then trained on the dataset. 
+The large training dataset is subsetted to include only those data inputs provided by the user. An artificial neural network is then trained on the substted training dataset. 
 
 During training a validation dataset is used to check for model overparameterization and confirm predictive ability for independent data not used by the training algorithm.
 
 After training, the expected indicator performance is evaluated according to a completely independent testing dataset. 
 
-This step can be seen as (a) a theoretical check that there is information in the features (data types) provided that can be used to estimate stock status and (b) a quantitative theoretical evaluation of the expected performance of the indicator.  
+This step can be seen as (a) a theoretical check that there is information in the features (input data) provided  to estimate stock status and (b) a quantitative theoretical evaluation of the expected performance of the indicator.  
 
 A result of this step is a fitted model and also a standardized version of the user's dataset that has the same standardization process as the training dataset. 
 
@@ -230,7 +230,7 @@ A result of this step is a fitted model and also a standardized version of the u
 
 The product of step 3 (fitted model and standardized version of the dataset) can be used to estimate stock status. 
 
-If a historical trend in empirically estimated stock status is provided, the results of indicator estimation can be compared with other empirical estimates. 
+If a historical trend in empirically estimated stock status is provided, the estimates of the indicator can be compared with other empirical estimates such as those arising from stock assessments.  
 
 ***
 
