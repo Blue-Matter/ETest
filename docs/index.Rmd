@@ -687,7 +687,7 @@ names(TD)
 
 [Tensorflow: Platform for machine learning](https://www.tensorflow.org/)
 
-[Nvidia CUDA Toolkit: GPU accellerated applications](https://developer.nvidia.com/cuda-toolkit)
+[Nvidia CUDA Toolkit: GPU accelerated applications](https://developer.nvidia.com/cuda-toolkit)
 
 ***
 
