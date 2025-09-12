@@ -158,7 +158,7 @@ Develop a flexible and powerful indicator of stock status for tunas, billfish an
 
 
 
-## Project details
+## Project Details
 
 Title: 'Simulation Testing Ecosystem Indicators: Support to ICCAT's Ecosystem Approach to Fisheries Management (EAFM)'
 
@@ -182,23 +182,27 @@ kable(dat,"simple",col.names=rep("",2))
 
 ## Introduction
 
-To meet the requirements of the precautionary approach and the ecosystem approach to fisheries management (EBFM), indicators of stock status are needed for secondary species, defined here as those lack sufficient data or capacity to conduct routine stock assessments (see Carruthers et al. 2024 for a detailed problem statement). These indicators must be theoretically sound and be validated empirically.  
+To meet the requirements of the precautionary approach and the ecosystem approach to fisheries management (EBFM), indicators of stock status are needed for secondary species, defined here as those lack sufficient data or capacity to conduct routine stock assessments (see Carruthers et al. 2024 for a detailed problem statement). Any such indicator be sound theoretically and should be validated empirically.  
 
-The EcoTest project aims to use simulation modelling to identify data and algorithms that can inform stock status of secondary species and then validate these indicators empirically in cases where there have been defensible stock assessments. 
+The EcoTest project aims to use simulation modelling to identify data types and algorithms that can inform stock status of secondary species and then validate these indicators empirically in cases where there have been defensible stock assessments. 
 
 A well-documented, defensible and transparent framework is needed to support tactical decision making to move beyond the single species assessment paradigm and make progress towards the essential goals of EBFM.
  
-Previous work synthesized the dynamics of six stock assessments and consolidated those into a multi-species, multi-fleet operating model (Huynh et al. 2022). Those operating models were used to simulate various future scenarios for fishing and stock dynamics to develop Indicator 1: an indicator system specific to the longline case study that could predict stock status for the 6 species without undergoing a full stock assessment (Carruthers et al 2024). 
+Previous EcoTest research consolidated the dynamics of six stock assessments for species caught in the North Atlantic longline fisheries (swordfish, bigeye tuna, albacore tuna, shortfin mako shark, white marlin and blue marlin) into a multi-species, multi-fleet operating model (Huynh et al. 2022). Those models were used to simulate various future scenarios for fishing and stock dynamics to develop Indicator 1: an indicator specific to the longline case study that could predict stock status for those 6 species without undergoing a full stock assessment (Carruthers et al 2024). The performance of Indicator 1 was generally very good, but it was applicable only to the 6 species of the operating model. 
 
-The key advance of this earlier work was to use deep learning to train neural networks on the posterior-predicted data of a large number of simulations (a training dataset). The ETest package is built around an evoluation of that approach, using simulated posterior predicted data from a much more general set of simulations that include population and fishing dynamics for a wide range of pelagic highly migratory species that are caught in Atlantic fisheries. 
+A key advance in developing Indicator 1 was the use of deep learning to train neural network indicators. The large number of simulated fisheries provided both true, simulated stock status and also a wide range of possible input data types (features). This training dataset was essentially a large table, including more than 20 thousand fishery simulations. Each line representing a simulation. The first column contained the true, simulated stock status, the remaining 450+ columns were 'features' - potential data inputs that could be available in a real fishery setting for estimating stock status. 
 
-These indicators focus on the prediction of stock status relative to a productive level expressed as spawning stock biomass relative to spawning stock biomass corresponding to MSY levels. This is a key reference level for evaluating stock status for the majority of stock assessed by ICCAT. Expert working groups also confirmed that there is interest in developing indicators that can accommodate various numbers of fleets and stocks, and that these should also apply to varying data availability scenarios with respect to length, age and relative abundance data. 
+In the EcoTest framework, the training dataset serves as a central resource for testing indicators. If for a real stock 15 data inputs (features) are available, the training dataset can be subsetted and neural networks trained for that set of inputs to see whether in theory those data could provide sufficient information about stock status. Hence EcoTest has a theoretical test of a proposed indicator built-in. The flexibility of neural networks alleviates the need to specify and code bespoke fishery dynamics models for every possible combination of input data. For example, a neural network indicator can be trained on (and use for prediction) only catches and mean lengths or alternatively, recent CPUE indices and recent catches. The focus is on the performance of the indicator. 
+
+The ETest package is built around Indicator 2: an evolution of the original approach, that includes a testing dataset from a much more general set of simulations encompassing population and fishing dynamics for a wide range of pelagic highly migratory species (sharks, billfish and tunas) [Carruthers & Taylor 2025](https://www.iccat.int/Documents/CVSP/CV082_2025/n_6/CV082060109.pdf) 
+. 
+
 
 ***
 
-## Overview of the EcoTest approach
+## Overview of the EcoTest Approach
 
-### Propose a suite of data inputs
+### Propose a Suite of Data Inputs
 
 EcoTest can accept a range of data inputs (features) that may be available for secondary species derived from data streams such as total annual catches, CPUE indices, mean length in catches and mean age in catches. These can be provide along with life-history (e.g. somatic growth, natural survival) and fleet-specific (e.g. selectivity) characteristics to potentially improve reliability in interpreting these data inputs.  
 
@@ -206,14 +210,16 @@ Where multiple fleets can be identified, data inputs can be provided for up to 3
 
 Where multiple stocks can be assumed to have been exploited by a common fishery with comparable exploitation history, multi-stock data inputs can be used including catch ratios of one stock to another. 
 
-### Format data inputs for use with EcoTest neural networks
+
+
+### Format Data Inputs for Use with EcoTest Neural Networks
 
 A training dataset was generated from a large number of multi-stock, multi-fleet simulations spanning a range of life-histories and fishery dynamics typical for tuna, billfish and sharks. In each simulation more than 400 data inputs were calculated along with the known, true simulated stock status (spawning biomass relative to spawning biomass at MSY levels). The data inputs relate to trajectories, levels and variability of data such as catches, CPUE indices and mean length in catches and are processed and formatted in such a way that they can be calculated for any fishery (e.g. mean lengthin catches is phrased as a percentage of asumptotic length, slopes in data are slopes in log data etc). 
 
 Some data inputs relate to data from fishing fleets, some relate to fishery characteristics, and others relate to the life hsitory of the stock(s) (see Table 1). 
 
 
-### Train an artificial neural network for the specific suite of data inputs selected by the user
+### Train an Artificial Neural Network for the Specified Data Inputs
 
 The large training dataset is subsetted to include only those data inputs provided by the user. An artificial neural network is then trained on the substted training dataset. 
 
@@ -226,7 +232,7 @@ This step can be seen as (a) a theoretical check that there is information in th
 A result of this step is a fitted model and also a standardized version of the user's dataset that has the same standardization process as the training dataset. 
 
 
-### Estimate stock status using the indicator
+### Estimate Stock Status Using the Indicator
 
 The product of step 3 (fitted model and standardized version of the dataset) can be used to estimate stock status. 
 
@@ -356,7 +362,94 @@ hist(my_pred_s, xlab="Estimated SSB/SSBMSY", main="Demonstration Stochastic Indi
 
 &nbsp;
 
-### Get a point estimate of stock status from single species data
+
+### The Training Dataset and Theoretical Indicator Performance 
+
+The training dataset 'TD' is loaded into your R session when you load the ETest library. The training dataset is very large including more than 20 thousand simulated fisheries and more than 450 features. 
+
+
+```{r train_NN, eval=F,echo=T}
+
+dim(TD)
+TD[1:3, 1:20]
+
+```
+
+<img src="img/train_NN.png" width = 500>
+
+If you wish to know the theoretical performance of an indicator based on a particular set of input data you can use the train_NN(). Lets try this for the full dataset:
+
+```{r train_NN2, eval=F,echo=T}
+
+NN1 = train_NN(TD)
+
+```
+
+<img src="img/Training.png" width = 450>
+
+The RStudio viewer window shows the progression of the neural network training over 20 epochs (estimation iterations, passes through the backprogation algorithm). 
+
+As the training progresses mean absolute error (MAE) and loss function (loss), on the training dataset (blue) decreases as predicted log(SSB/SSMSY) gets closer to the simulated log(SSB/SSBMSY). As the line plateaus, this indicates that the neural network is not finding a better fit to the data. 
+
+The green line represents the MAE and loss of the validation dataset, an independent set of data not used in the training. These lines should track one another. If not it is possible that the model is over parameterized (blue line below green line) or that the validation dataset is not representative of the training dataset (see validation_split). 
+
+The RStudio plot window shows the simulated vs predicted chart:
+
+<img src="img/TD_all_perf.png" width = 450>
+
+Using all the features (all of the data inputs, columns) of the training dataset we can achieve very good stock status estimation performance using the default neural network. If the stock was below half of SSBMSY then the indicator would correctly identify this in around 82% of simulations. If the stock was above SSBMSY, the indicator would correctly identify this in 85% of simulations. 
+
+Of course we might not have access to all of those data types. Lets subset the training dataset to see how well an indicator of stock 1 status would work with only stock 1 CPUE, catch and mean length data:
+
+```{r train_NN_sub, eval=F,echo=T}
+
+ft = names(TD) # the names of all features
+is_stock_1 = grepl("s1",ft)  # those features for stock 1 (s1 is the code)
+is_ML = grepl("ML_",ft)      # those features relating to mean length
+is_I = grepl("I_",ft)        # those features relating to CPUE indices
+is_C = grepl("C_",ft)        # those features relating to Catch indices
+
+keep = is_stock_1 & (is_ML | is_I | is_C)
+
+dat_inputs = TD[,keep]
+
+# lets make our new dataset
+myTD = cbind(TD$Res,         # first column is the response variable
+             TD$K_s1,        # we'll assume we know somatic growth
+             TD$M_K_s1,      # we can get M/K ratio from demographic analysis
+             TD$maxa_s1,     # maximum age is known (age at 5% survival)
+             TD$L50_Linf_s1, # the ratio of length at 50% maturity to Linfinity is known
+             dat_inputs)     # our data inputs from above
+                
+NN2 = train_NN(myTD)
+
+```
+
+<img src="img/TD_sub_perf.png" width = 450>
+
+The mean absolute error of the indicator is somewhat higher and the classification errors are higher, but theoretical performance based on just catches, mean length and CPUE is relatively good. 
+
+It's possible that a more complex neural network might provide better performance. The default is 6 nodes in the first layer and 3 in the second layer. 
+
+This might seem like a simple neural network and compared the many billion parameter LLMs of openAI, it is. However by conventional fishery modelling standards, this simple model includes a large number of parameters (model weights). The dataset myTD has 58 features in the input layer. That means 6 * 58 weights before the first layer of nodes. There are 6 * 3 between the first and second layers and another 3 before the output layer (the response variable, log(SSB/SSBMSY)). 
+
+That means a total of 369 parameters. 
+
+But, lets lose our mind for a second and make a much more complicated network and fit it for longer. This one has 2360 parameters:
+
+
+```{r train_NN_sub_complex, eval=F,echo=T}
+
+NN3 = train_NN(myTD, nodes = c(30,20), nepoch = 50)
+
+```
+
+<img src="img/train_op.png" width = 450>
+
+The neural network is continuing to find a better fit to the training dataset but without seeing any benefits in fit to the validation dataset. This suggests that the performance it is obtaining on the training set is not representative of what can be expected for an independent dataset. The model is over parameterized. The solution in such cases is to either simplify the model or make the training dataset larger. 
+
+
+### Get an Estimate of Stock Status from Single Species Data
 
 In this example we will process some example time series data, train an indicator and estimate stock status using it. 
 
@@ -408,7 +501,7 @@ pred_ind(my_indicator2)  # estimate stock status from trained indicator and subm
 ```
 
 
-### Conduct empirical evaluation using ETest datasets
+### Conduct Empirical Evaluation Using ETest Datasets
 
 The ETest package comes with a number of real fishery datasets loaded. You can list these using the R function data():
 
@@ -452,7 +545,7 @@ Shark_1_pred_retro = pred_ind(Shark_1_ind_retro)
 <img src="img/Shark_1_retro.png" width = 350>
 
 
-### Use an existing stock synthesis assessment to conduct an empirical test
+### Use an Existing Stock Synthesis Assessment to Conduct an Empirical Test
 
 To obtain all relevant outputs for a current Stock Synthesis model you will a directory where an assessment has been run and you will need to install the latest version of the r4ss package.
 
@@ -490,7 +583,7 @@ wm_pred_retro = pred_ind(wm_ind_retro)
 
 ```
 
-### Multi-stock indicators
+### Multi-Stock Indicators
 
 In general, fisheries stock assessment has failed to incorporate information across multiple species in the estimation of stock status. This is a missed opportunity. 
 
@@ -552,22 +645,10 @@ As expected, the relative index levels were doing the majority (but not all) of 
 
 ***
 
-## Neural network design and training
-
-### Over parameterization
-
-< coming soon!>
-
-### Altering network design
-
-< coming soon!>
-
-### Training options
-
-< coming soon!>
 
 ## Summary of EcoTest Indicator Features (data types)
 
+To use EcoTest, you must format your input data as described in Table 1. 
 
 Table 1. Indicator Features (data types)
 
@@ -576,13 +657,13 @@ plotatab('tables/Various.xlsx','Features')
 
 ```
 
-***
+Any stock-specific data_input has an 's' code. Any fleet specific input has a stock and a fleet 'f' code. For example, somatic growth K for stock 1 is codified K_s1. Catches relative to historical average Crel for stock 2, fleet 1 is Crel_s2_f1. You can always list the full set of names of all the possible features by getting the names of the training dataset:
 
+```{r Features_TD, eval=T,echo=T}
+names(TD)
 
-## Resources
+```
 
-
-The [openMSE website](https://openmse.com/) contains extensive documentation about openMSE and approaches such as RCM. 
 
 ***
 
