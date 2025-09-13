@@ -377,15 +377,27 @@ TD[1:3, 1:20]
 
 <img src="img/train_NN.png" width = 500>
 
-If you wish to know the theoretical performance of an indicator based on a particular set of input data you can use the train_NN(). Lets try this for the full dataset:
+This training dataset shows the range of conditions that were simulated. These provide an idea of whether the indicator is applicable to a new dataset. 
+
+Here for example, is the range of von Bertallanfy growth and natural mortality in the training dataset:
 
 ```{r train_NN2, eval=F,echo=T}
+
+plot(exp(TD$K_s1),exp(TD$K_s1+TD$M_K_s1), xlab = "von B. K", ylab="Nat. Mort.",pch=19, cex=0.5, col="#0000ff50",xlim=c(0.15,0.8))
+```
+
+<img src="img/Sim_cond.png" width = 400>
+
+
+If you wish to know the theoretical performance of an indicator based on a particular set of input data you can use the train_NN(). Lets try this for the full dataset:
+
+```{r train_NN3, eval=F,echo=T}
 
 NN1 = train_NN(TD)
 
 ```
 
-<img src="img/Training.png" width = 450>
+<img src="img/train_NN.png" width = 500>
 
 The RStudio viewer window shows the progression of the neural network training over 20 epochs (estimation iterations, passes through the backprogation algorithm). 
 
