@@ -42,7 +42,7 @@ plotline=function(xmu,ymu,logslp,range=5,col="#00ff0099"){
 #' @param rnd Integer. Number of significant digits to plot. 
 #' @param plot Boolean. Should a plot be presented? 
 #' @examples
-#' ts.features(sin(seq(0,10,length.out=40)))
+#' ts_features(1.5+sin(seq(1,12,length.out=40)),"C")
 #' @author T. Carruthers
 #' @export
 ts_features=function(ts, lab="", enp.mult=0.2, rnd=3,plot=T){
