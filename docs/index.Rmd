@@ -436,7 +436,7 @@ NN1 = train_NN(TD)
 
 The RStudio viewer window shows the progression of the neural network training over 20 epochs (estimation iterations, passes through the backprogation algorithm). 
 
-As the training progresses mean absolute error (MAE) and loss function (loss), on the training dataset (blue) decreases as predicted log(SSB/SSMSY) gets closer to the simulated log(SSB/SSBMSY). As the line plateaus, this indicates that the neural network is not finding a better fit to the data. 
+As the training progresses, mean absolute error (MAE) and the value of the loss function (loss) for the training dataset (blue) decreases (predicted log(SSB/SSMSY) gets closer to the simulated log(SSB/SSBMSY)). As the line plateaus, this indicates that the neural network is not finding a better fit to the data. 
 
 The green line represents the MAE and loss of the validation dataset, an independent set of data not used in the training. These lines should track one another. If not it is possible that the model is over parameterized (blue line below green line) or that the validation dataset is not representative of the training dataset (see validation_split). 
 
@@ -500,7 +500,7 @@ The neural network is continuing to find a better fit to the training dataset bu
 
 In this example we will process some example time series data, train an indicator and estimate stock status using it. 
 
-The ETest package comes with an example dataset 'Some_data' for these worked examples. The dataset has catches, CPUE indices, mean length, life history and selectivity information for three fleets simultaneously fishing three fleets. We are not necessarily going to assume we have all these data, but they are there to experiment with.  
+The ETest package comes with an example dataset 'Some_data' for these worked examples. The dataset has catches, CPUE indices, mean length, life history and selectivity information for three fleets simultaneously fishing three stocks. We are not necessarily going to assume we have all these data, but they are there to experiment with.  
 
 To make creating time series data inputs easier, ETest has a function ts_features() which extracts the levels and slopes processed in the same way as the training dataset.  
 
