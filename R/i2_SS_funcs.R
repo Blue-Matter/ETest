@@ -13,6 +13,28 @@ ss_names=function(io){
   #unique(io$inputs$dat$catch$fleet)
 }
 
+ss_fleet_helper = function(io){
+  if(!is.null(io)){
+    fleetnames =  io$inputs$dat$fleetinfo$fleetname
+    nf=length(fleetnames)
+    helpy = array("-",c(4,nf))
+    
+    ct = io$inputs$dat$catch
+    allfleet = aggregate(ct$catch,by=list(fleet = ct$fleet),sum)
+    helpy[1,allfleet$fleet] = round(allfleet$x/sum(allfleet$x)*100,1)
+    
+    ind = io$inputs$dat$CPUE
+    ny = aggregate(rep(1,nrow(ind)),by=list(ind$index),sum)
+    miny = aggregate(ind$year,by=list(ind$index),min)
+    maxy = aggregate(ind$year,by=list(ind$index),max)
+    helpy[2,ny$Group.1] = ny$x; helpy[3,miny$Group.1]=miny$x; helpy[4,maxy$Group.1]=maxy$x
+    colnames(helpy) = fleetnames
+    rownames(helpy) = c("Catch%","No yr","first yr","last yr")
+    return(helpy)
+  }else{
+    return("NA")
+  }
+}
 
 getmucv = function(comps,lbins, ndraw=20){
   
@@ -123,9 +145,11 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
   for(ff in 1:2)newind[ct$fleet == Find[ff]]=ff  
   aggcatch = aggregate(ct$catch,by=list(year = ct$year, fleet = newind),sum)
   aggcatch = aggcatch[aggcatch$year > 0 & aggcatch$year<=lastyr,] # Retro
-  
+  allfleet = aggregate(ct$catch,by=list(fleet = ct$fleet),sum)
   fleetcatch = aggregate(ct$catch,by=list(fleet = newind),sum)
   fleetcatch$x = fleetcatch$x/sum(fleetcatch$x)
+  #print(allfleet)
+  #print(fleetcatch)
   
   # get indices ----------
   ind = dat$CPUE
@@ -185,20 +209,20 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
   selpar = getsels(io,Find,dat,plotsmooth) # selectivity by fleet (MLE, not sampled)
   
   # Blank vectors
-  I_cur<-I_mu<-I_rel<-I_g5<-I_g10<-I_g20<-I_g40<- 
-    Isd1 <- Isd2 <- Isd3 <-
-    C_cur<- C_mu<-C_rel<-C_g5<-C_g10<- C_g20<- C_g40<-
-    Csd <- CF <- 
-    ML_cur<-ML_mu<-ML_rel<-ML_g5<-ML_g10<-ML_g20<- ML_g40 <- ML_L50 <- ML_Linf <-
-    MA_cur<-MA_mu<-MA_rel<-MA_g5<-MA_g10<-MA_g20<- MA_g40 <-
-    MV_cur<- MV_mu<-MV_rel<- MV_g5<-MV_g10<-MV_g20<- MV_g40<-
-    FM_cur <- FM_mu <- FM_rel <- FM_g5 <- FM_g10 <-FM_g20 <- FM_g40<-rep(NA,nsamp)
-  
+    
    
   # summarise fleet specific data
   fleetdat = list()
   
   for(ff in 1:3){
+    I_cur<-I_mu<-I_rel<-I_g5<-I_g10<-I_g20<-I_g40<- 
+      Isd1 <- Isd2 <- Isd3 <-
+      C_cur<- C_mu<-C_rel<-C_g5<-C_g10<- C_g20<- C_g40<-
+      Csd <- CF <- 
+      ML_cur<-ML_mu<-ML_rel<-ML_g5<-ML_g10<-ML_g20<- ML_g40 <- ML_L50 <- ML_Linf <-
+      MA_cur<-MA_mu<-MA_rel<-MA_g5<-MA_g10<-MA_g20<- MA_g40 <-
+      MV_cur<- MV_mu<-MV_rel<- MV_g5<-MV_g10<-MV_g20<- MV_g40<-
+      FM_cur <- FM_mu <- FM_rel <- FM_g5 <- FM_g10 <-FM_g20 <- FM_g40<-rep(NA,nsamp)
     
     # catch
     fcat = aggcatch$x[aggcatch$fleet==ff]
@@ -227,21 +251,22 @@ SS_2_ET = function(io, Fnam = c("F4_JPN_LL","F8_ESP_LL"), Inam = c("S2_JPN_LATE"
     
     for(i in 1:nsamp){
       # Indices
-      findsim = rlnorm(nyind, log(find),findcv)
-      Is = smooth2(findsim,plot=plotsmooth)
-      #Isd[i] = sd(smooth2(findsim,plot=plotsmooth,ret='resid'))
-      I_cur[i]<-Is[nyind] 
-      #C_mu[i]<-mean(Cobs[i,ny:Iind[i,2]]) # no info
-      I_rel[i] <- I_cur[i] / mean(Is[1:nyind],na.rm=T)
-      if(nyind>=5)I_g5[i]<-slp3(findsim[nyind-(4:0)])
-      if(nyind>=10)I_g10[i]<-slp3(findsim[nyind-(9:0)])
-      if(nyind>=20)I_g20[i]<-slp3(findsim[nyind-(19:0)])
-      if(nyind>=40)I_g40[i]<-slp3(findsim[nyind-(39:0)])
-      ind = nyind - (min(20,nyind):1) +1
-      Isd1[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.4, plot=plotsmooth))
-      Isd2[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.2, plot=plotsmooth))
-      Isd3[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.1, plot=plotsmooth))
-      
+      if(length(find)>1){
+        findsim = rlnorm(nyind, log(find),findcv)
+        Is = smooth2(findsim,plot=plotsmooth)
+        #Isd[i] = sd(smooth2(findsim,plot=plotsmooth,ret='resid'))
+        I_cur[i]<-Is[nyind] 
+        #C_mu[i]<-mean(Cobs[i,ny:Iind[i,2]]) # no info
+        I_rel[i] <- I_cur[i] / mean(Is[1:nyind],na.rm=T)
+        if(nyind>=5)I_g5[i]<-slp3(findsim[nyind-(4:0)])
+        if(nyind>=10)I_g10[i]<-slp3(findsim[nyind-(9:0)])
+        if(nyind>=20)I_g20[i]<-slp3(findsim[nyind-(19:0)])
+        if(nyind>=40)I_g40[i]<-slp3(findsim[nyind-(39:0)])
+        ind = nyind - (min(20,nyind):1) +1
+        Isd1[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.4, plot=plotsmooth))
+        Isd2[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.2, plot=plotsmooth))
+        Isd3[i] = sd(smooth2(findsim[ind], ret = 'resid', enp.mult = 0.1, plot=plotsmooth))
+        }
       # Catches 
       fcatsim = rlnorm(nycat,log(fcat),catch_CV)
       Cs = smooth2(fcatsim,plot=plotsmooth)

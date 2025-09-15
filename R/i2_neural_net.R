@@ -1,8 +1,27 @@
 
 
+
+#' Training a neural network for features specified by user data.
+#'
+#' A function that examines the user specified data, subsets the training dataset for those features (data types), standardizes the user data and trains a bespoke neural network indicator for the user specified data types.
+#'
+#' @param TD A training dataset of nsimulation rows and ncolumns features (first column is the response variable, e.g. stock status)
+#' @param nodes A vector of 2 positions. Positive integers. There are few general rules for neural network design. However one rule of thumb is that the width of the first and second layer of the neural network. In general, the first layer should be smaller than the number of features (data types) in the user specified dataset. The second layer should be smaller than the first layer. Check for overparameterization in the fitting plots (e.g. a validation MAE that is substantially higher than the training MAE).
+#' @param nepoch Positive integer. The number of iterations (passes of the back propagation algorithm) used in the training of the neural network. Should be sufficient that loss (or MAE) has stabilised.
+#' @param plot Boolean. Should a simulated vs predicted plot / confusion matrix be presented for the independent testing dataset?
+#' @param model A keras model. Optional. You may wish to keep training a partially trained model (needs to be compatible with shape of dataset).
+#' @param model_savefile Character vector. Optional. A file location and name for saving the fitted keras model. Must have a .keras type. E.g. C:/temp/mymodel.keras.
+#' @param validation_split Fraction. The proportion of the dataset that will be used for cross-validation as the neural network is training.
+#' @param test_split Fraction. The proportion of the training dataset reserved as an independent testing dataset (those data of the simulated - predicted plot and confusion matrix).
+#' @param lev A vector of 2 positions. The location of the breaks of the confusion matrix.
+#' @param seed Numeric value. Random seed for stochastic draws of validation and testing datasets.
+#' @examples
+#' train_NN(TD)
+#' @author T. Carruthers
+#' @export
 train_NN = function(TD, nodes = c(4, 2), nepoch = 20, plot = T, model=NULL, model_savefile=NA, 
-                    validation_split=0.1, test_split = 0.1, lev=c(0.5,1)){
-  
+                    validation_split=0.1, test_split = 0.1, lev=c(0.5,1), seed=1){
+  set.seed(seed)
   nr<-nrow(TD)
   nc<-ncol(TD)
   p_nontrain = test_split
@@ -145,9 +164,9 @@ dolog_2=function(dat){
 }
                           
                          
-makerawdata_2 = function(allout, sno=1, isBrel = F, clean = T, 
+makerawdata_2 = function(allout, sno=1, isBrel = F,  
                        inc_Irel = T, inc_I = T, inc_CR = T, inc_CAL = T, inc_CAA = T,
-                       stock_in = NA, fleet_in = NA, Bmin = 0.1){
+                       stock_in = NA, fleet_in = NA, Brange = c(0.025,4.5)){
   # sno=1; isBrel = F; clean = T;  inc_Irel = T; inc_I = T;  inc_CR = T; stock_in = NA; inc_CAL = T; inc_CAA = T
   cdat = as.data.frame(rbindlist(allout))
   dnames = names(cdat)
@@ -162,10 +181,8 @@ makerawdata_2 = function(allout, sno=1, isBrel = F, clean = T,
   dat = resp_subsetter(cdat, sno, isBrel)                     # gets the right response variable according to sno
   dat = dolog_2(dat)                                  # log imperfect fractions 
   dat = dologit(dat,types = "VML")                    # logit proportions (but rescaled 0.05 - 0.95 prior to logit)
-  if(clean) dat=cleandat_2(dat)                       # clean NAs and Infs 
-  
+  dat = cleandat_2(dat,resprange = log(Brange))       # clean NAs and Infs 
   dat = rem_const(dat)                                # remove any independent variables with no variability (constant over simulations)
-  dat = dat[dat$Res > log(Bmin),]
   dat
   
 }

@@ -32,6 +32,19 @@ plotline=function(xmu,ymu,logslp,range=5,col="#00ff0099"){
   lines(xs,yscale,col=col,lwd=3)
 }
 
+
+#' Extract time-series features for Indicator 2 data inputs
+#'
+#' @param ts A vector of positive real numbers, a data time series (e.g. 20 years of catch data) 
+#' @param lab Character string. The label (code) of the time series (e.g., C for catches, I for CPUE index, ML for mean length, MV for variability in mean length, FM for fraction mature).
+#' @param enp.mult Positive fraction. Effective number of parameters multiplier. A value of 0.5 means a loess smoother will be fitted that has half as many parameters as data points. Larger numbers are more flexible models (less smoothing).
+#' @param plot Boolean. Should a simulated vs predicted plot / confusion matrix be presented for the independent testing dataset?
+#' @param rnd Integer. Number of significant digits to plot. 
+#' @param plot Boolean. Should a plot be presented? 
+#' @examples
+#' ts.features(sin(seq(0,10,length.out=40)))
+#' @author T. Carruthers
+#' @export
 ts_features=function(ts, lab="", enp.mult=0.2, rnd=3,plot=T){
   namy = deparse(substitute(ts))
   ny = length(ts)
