@@ -232,7 +232,7 @@ The data inputs relate to trajectories, levels and variability of data such as c
 
 ### Identifying Data Streams available for a Particular Case Study
 
-For a given case-study only some of the data inputs (types of data) of the full training dataset may be available. The training dataset subsetted to include only those data inputs. 
+For a given case-study only some of the data inputs (types of data, data streams) of the full training dataset may be available. The training dataset is subsetted to include only those data inputs. 
 
 <img src="img/Idea_2.png" width = 550>
 
