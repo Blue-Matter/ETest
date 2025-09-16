@@ -251,7 +251,7 @@ Once an indicator has been established (a set of case-study specific data inputs
 
 ### Use the Indicator to Estimate Stock Status
 
-Assuming the indicator passes both theoretical evaluate and empirical validation, it may then be used to determine stock status for the case study. 
+Assuming the indicator passes both theoretical evaluate and empirical validation, data inputs for a real case-study can be formatted and submitted to the indicator to determine stock status. 
 
 <img src="img/Idea_5.png" width = 550>
 
