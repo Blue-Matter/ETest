@@ -230,9 +230,9 @@ The data inputs relate to trajectories, levels and variability of data such as c
 
 <img src="img/Idea_1.png" width = 550>
 
-### Identifying Data_Inputs for a Particular Case Study
+### Identifying Data Streams available for a Particular Case Study
 
-For a given case-study a subset of the training data inputs may be available. Those are specified and the training dataset subsetted to include only those inputs. 
+For a given case-study only some of the data inputs (types of data) of the full training dataset may be available. The training dataset subsetted to include only those data inputs. 
 
 <img src="img/Idea_2.png" width = 550>
 
