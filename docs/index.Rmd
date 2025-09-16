@@ -770,7 +770,7 @@ Juan-Jordá, M.J., Murua, H., Arrizabalaga, H., Dulvy, N.K., and Restrepo, V. 20
 
 EcoTest is funded by ICCAT as part of a commitment to the Global Environmental Facility (GEF) Common Oceans ABNJ Tuna Project Fund.
 
-Many thanks to The Ocean Foundation for funding Phases I and II of the EcoTest framework. 
+Many thanks to The Ocean Foundation and the Pew Charitable Trusts for funding Phases I and II of the EcoTest framework. 
 
 Many thanks to the ICCAT Ecosystem working group for comments on earlier versions of EcoTest: Nathan Taylor, Alex Hanke, Sachiko Tsuji, Guillermo Diaz, Diego Alvarez, Laurie Kell, Maria Juan Jorda, Andres Domingo.  
 
